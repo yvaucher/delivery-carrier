@@ -78,6 +78,11 @@ Technical references
 
 .. _"Barcode" web service documentation: http://www.poste.ch/post-barcode-cug.htm
 
+Contributors
+------------
+
+* Yannick Vaucher <yannick.vaucher@camptocamp.com>
+
 ----
 
 *TODO*:

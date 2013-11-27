@@ -151,8 +151,9 @@ class PostlogisticsConfigSettings(orm.TransientModel):
         ir_model_data_obj = self.pool.get('ir.model.data')
         carrier_option_obj = self.pool.get('delivery.carrier.template.option')
 
+        xmlid = 'delivery_carrier_label_postlogistics', 'postlogistics'
         postlogistics_partner = ir_model_data_obj.get_object(
-            cr, uid, 'delivery_carrier_label_laposte', 'postlogistics', context=context)
+            cr, uid, *xmlid, context=context)
 
         for service_code, data in additional_services.iteritems():
 
@@ -205,7 +206,7 @@ class PostlogisticsConfigSettings(orm.TransientModel):
         carrier_option_obj = self.pool.get('delivery.carrier.template.option')
 
         postlogistics_partner = ir_model_data_obj.get_object(
-            cr, uid, 'delivery_carrier_label_laposte', 'postlogistics', context=context)
+            cr, uid, 'delivery_carrier_label_postlogistics', 'postlogistics', context=context)
 
         for service_code, data in additional_services.iteritems():
 
@@ -236,8 +237,9 @@ class PostlogisticsConfigSettings(orm.TransientModel):
         service_group_obj = self.pool.get('postlogistics.service.group')
         carrier_option_obj = self.pool.get('delivery.carrier.template.option')
 
+        xmlid = 'delivery_carrier_label_postlogistics', 'postlogistics'
         postlogistics_partner = ir_model_data_obj.get_object(
-            cr, uid, 'delivery_carrier_label_laposte', 'postlogistics', context=context)
+            cr, uid, *xmlid, context=context)
         lang = context.get('lang', 'en')
 
         group = service_group_obj.browse(cr, uid, group_id, context=context)

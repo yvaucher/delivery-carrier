@@ -18,9 +18,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import logging
+
 from openerp.osv import orm, fields
 
 from postlogistics.web_service import PostlogisticsWebService
+
+_logger = logging.getLogger(__name__)
 
 
 class PostlogisticsConfigSettings(orm.TransientModel):
@@ -169,6 +173,8 @@ class PostlogisticsConfigSettings(orm.TransientModel):
                             postlogistics_type='delivery',
                             partner_id=postlogistics_partner.id)
                 carrier_option_obj.create(cr, uid, data, context=context)
+        lang = context.get('lang', 'en')
+        _logger.info("Updated delivery instrutions. [%s]" %(lang))
 
     def _get_additional_services(self, cr, uid, ids, web_service,
                                  company, service_code, context=None):
@@ -222,6 +228,8 @@ class PostlogisticsConfigSettings(orm.TransientModel):
                             postlogistics_type='additional',
                             partner_id=postlogistics_partner.id)
                 carrier_option_obj.create(cr, uid, data, context=context)
+        lang = context.get('lang', 'en')
+        _logger.info("Updated additional services [%s]" % (lang))
 
     def _update_basic_services(self, cr, uid, ids, web_service, company, group_id, context=None):
         """
@@ -292,6 +300,7 @@ class PostlogisticsConfigSettings(orm.TransientModel):
                 delivery_instructions[key] = value
                 delivery_instructions[key]['postlogistics_basic_service_ids'] = [(6, 0, [option_id])]
 
+        _logger.info("Updated '%s' basic service [%s]." % (group.name, lang))
         return {'additional_services': additional_services,
                 'delivery_instructions': delivery_instructions}
 

@@ -329,15 +329,16 @@ class PostlogisticsWebService(object):
         :param picking: picking browse record
         :param lang: OpenERP language code
         :return: {
-            value: [
-                {item_id: pack id
-                 binary: file returned by API
-                 tracking_number: id number for tracking
-                 }
-                ]
-            errors: list of error message
-            warrnings: list of warning message
-            }
+            value: [{item_id: pack id
+                     binary: file returned by API
+                     tracking_number: id number for tracking
+                     file_type: str of file type
+                     }
+                    ]
+            errors: list of error message if any
+            warnings: list of warning message if any
+        }
+
         """
         # get options
         lang = self._get_language(user_lang)
@@ -350,6 +351,8 @@ class PostlogisticsWebService(object):
         data = self._prepare_data(item_list)
 
         envelope = self._prepare_envelope(picking, post_customer, data)
+
+        output_format = self._get_output_format(picking)
 
         res = {'value': []}
         request = self.client.service.GenerateLabel
@@ -369,7 +372,8 @@ class PostlogisticsWebService(object):
                     'item_id': item.ItemID,
                     'binary': item.Label,
                     'tracking_number': item.IdentCode,
-                    })
+                    'file_type': output_format,
+                })
 
             if hasattr(item, 'Warnings') and item.Warnings:
                 for warning in item.Warnings:

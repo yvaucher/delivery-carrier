@@ -88,7 +88,7 @@ class stock_picking(orm.Model):
             labels.append({'tracking_id': track.id if track else False,
                            'file': label['binary'].decode('base64'),
                            'file_type': label['file_type'],
-                           'name': tracking_number,
+                           'name': tracking_number + '.' + label['file_type'],
                            })
 
         return labels

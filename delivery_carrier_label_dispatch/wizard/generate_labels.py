@@ -92,10 +92,21 @@ class DeliveryCarrierLabelGenerate(orm.TransientModel):
                 picking_out_obj = self.pool['stock.picking.out']
                 picking = moves[0].picking_id
                 # generate the label of the pack
-                picking_out_obj.generate_labels(
-                    cr, uid, [picking.id],
-                    tracking_ids=[pack.id],
-                    context=context)
+                if pack:
+                    tracking_ids = [pack.id]
+                else:
+                    tracking_ids = None
+                try:
+                    picking_out_obj.generate_labels(
+                        cr, uid, [picking.id],
+                        tracking_ids=tracking_ids,
+                        context=context)
+                except orm.except_orm as e:
+                    picking_name = _('Picking: %s') % picking.name
+                    pack_num = _('Pack: %s') % pack.name if pack else ''
+                    raise orm.except_orm(
+                        e.name,
+                        _('%s %s - %s') % (picking_name, pack_num, e.value))
                 if pack:
                     label = self._find_pack_label(cr, uid, wizard, pack,
                                                   context=context)

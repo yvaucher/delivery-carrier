@@ -2,20 +2,32 @@
 GLS Group - Transportation services
 =====================================
 
-Implémentation du service Unibox:
-- envoi des informations du bon de livraison et des colis au serveur GLS unibox
-- retour par webservice des informations de routage
-- génération des étiquettes GLS Unibox
+Implémentation du service Unibox service implementation:
+- send delivery order informations and parcel infothe GLS unibox server
+- webservice routing info in back
+- label GLS Unibox generate
 
 
-![Paramétrage des comptes GLS dans l'ERP Odoo](/static/description/gls1.png "Paramétrage des comptes GLS par société")
+TODO:
+- translation
+- Shop Delivery Service
+- delivery Express Parcel Guaranteed (for companies only)
+- migrate the module in 8 version
+
+Pull Request are welcomed to gather improvement on this module
+
+### Account GLS settings by company
+![Account GLS settings by company Odoo ERP](/delivery_carrier_label_gls/static/description/gls1.png)
 
 
-![Bon de livraison de l'ERP Odoo avec transporteur GLS](/static/description/gls2.png "Bon de livraison Odoo avec transporteur GLS")
+### Odoo Delivery Order avec GLS carrier
+![Odoo Delivery Order avec GLS carrier with Odoo ERP](/delivery_carrier_label_gls/static/description/gls2.png)
 
 
-![Etiquette de transport France, transporteur GLS](/static/description/gls3.png "Etiquette de transport GLS à destination de la France généré avec Odoo")
+### GLS transport label towards France generated with Odoo ERP
+![GLS transport label towards France generated with Odoo ERP](/delivery_carrier_label_gls/static/description/gls3.png)
 
 
-![Etiquette de transport International, transporteur GLS](/static/description/gls4.png "Etiquette de transport GLS à destination de l'étranger généré avec Odoo")
+### GLS transport label towards foreign countries
+![GLS transport label towards foreign countries](/delivery_carrier_label_gls/static/description/gls4.png )
 

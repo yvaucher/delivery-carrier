@@ -37,6 +37,7 @@ class PostlogisticsLicense(orm.Model):
                  "service."),
     }
 
+
 class PostlogisticsServiceGroup(orm.Model):
     _name = 'postlogistics.service.group'
     _description = 'PostLogistics Service Group'
@@ -53,8 +54,10 @@ class PostlogisticsServiceGroup(orm.Model):
     }
 
     _sql_constraints = [
-        ('group_extid_uniq', 'unique(group_extid)', "A service group ID must be unique.")
-        ]
+        ('group_extid_uniq', 'unique(group_extid)',
+         "A service group ID must be unique.")
+    ]
+
 
 POSTLOGISTIC_TYPES = [
     ('label_layout', 'Label Layout'),
@@ -63,61 +66,70 @@ POSTLOGISTIC_TYPES = [
     ('basic', 'Basic Service'),
     ('additional', 'Additional Service'),
     ('delivery', 'Delivery Instructions')
-    ]
+]
 
 
 class DeliveryCarrierTemplateOption(orm.Model):
-    """
-    Set name translatable and add service group
-    """
+
+    """ Set name translatable and add service group """
     _inherit = 'delivery.carrier.template.option'
 
     _columns = {
         'name': fields.char('Name', size=64, translate=True),
         'postlogistics_service_group_id': fields.many2one(
-            'postlogistics.service.group', string='PostLogistics Service Group'),
-        'postlogistics_type': fields.selection(POSTLOGISTIC_TYPES,
-                                               string="PostLogistics option type"),
-        # relation tables to manage compatiblity between basic services and other services
+            'postlogistics.service.group',
+            string='PostLogistics Service Group'),
+        'postlogistics_type': fields.selection(
+            POSTLOGISTIC_TYPES,
+            string="PostLogistics option type"),
+        # relation tables to manage compatiblity between basic services
+        # and other services
         'postlogistics_basic_service_ids': fields.many2many(
-            'delivery.carrier.template.option', 'postlogistics_compatibility_service_rel',
-            'service_id', 'basic_service_id', string="Basic Services",
+            'delivery.carrier.template.option',
+            'postlogistics_compatibility_service_rel',
+            'service_id', 'basic_service_id',
+            string="Basic Services",
             domain=[('postlogistics_type', '=', 'basic')],
             help="List of basic service for which this service is compatible"),
         'postlogistics_additonial_service_ids': fields.many2many(
-            'delivery.carrier.template.option', 'postlogistics_compatibility_service_rel',
-            'basic_service_id', 'service_id', string="Compatible Additional Services",
+            'delivery.carrier.template.option',
+            'postlogistics_compatibility_service_rel',
+            'basic_service_id', 'service_id',
+            string="Compatible Additional Services",
             domain=[('postlogistics_type', '=', 'additional')]),
         'postlogistics_delivery_instruction_ids': fields.many2many(
-            'delivery.carrier.template.option', 'postlogistics_compatibility_service_rel',
-            'basic_service_id', 'service_id', string="Compatible Delivery Instructions",
-            domain=[('postlogistics_type', '=','delivery')]),
-        }
+            'delivery.carrier.template.option',
+            'postlogistics_compatibility_service_rel',
+            'basic_service_id', 'service_id',
+            string="Compatible Delivery Instructions",
+            domain=[('postlogistics_type', '=', 'delivery')]),
+    }
 
     _defaults = {
         'postlogistics_type': False,
-        }
+    }
 
 
 class DeliveryCarrierOption(orm.Model):
-    """
-    Set name translatable and add service group
-    """
+
+    """ Set name translatable and add service group """
     _inherit = 'delivery.carrier.option'
 
     _columns = {
         'name': fields.char('Name', size=64, translate=True),
-        # to repeat carrier allowed option ids to filter domain set by default from view
-        'allowed_option_ids': fields.related('carrier_id', 'allowed_option_ids', type='many2many',
-            relation='delivery.carrier.template.option', string='Allowed and compatible options',
+        # to repeat carrier allowed option ids to filter domain set by
+        # default from view
+        'allowed_option_ids': fields.related(
+            'carrier_id', 'allowed_option_ids', type='many2many',
+            relation='delivery.carrier.template.option',
+            string='Allowed and compatible options',
             readonly=True),
-        }
+    }
 
 
 class DeliveryCarrier(orm.Model):
-    """
-    Add service group
-    """
+
+    """ Add service group """
     _inherit = 'delivery.carrier'
 
     def _get_carrier_type_selection(self, cr, uid, context=None):
@@ -143,7 +155,8 @@ class DeliveryCarrier(orm.Model):
             if not carrier.partner_id.id == postlogistics_partner.id:
                 continue
 
-            option_ids = [opt.tmpl_option_id.id for opt in carrier.available_option_ids
+            option_ids = [opt.tmpl_option_id.id for opt
+                          in carrier.available_option_ids
                           if opt.postlogistics_type == 'basic']
             if not option_ids:
                 continue
@@ -156,10 +169,11 @@ class DeliveryCarrier(orm.Model):
 
         A domain would be too complicated.
 
-        We do this to ensure the user first select a basic service. And then he
-        adds additional services.
+        We do this to ensure the user first select a basic service. And
+        then he adds additional services.
 
         :return: {carrier_id: [ids]}
+
         """
         res = dict.fromkeys(ids, [])
         option_template_obj = self.pool.get('delivery.carrier.template.option')
@@ -215,7 +229,6 @@ class DeliveryCarrier(orm.Model):
             res[carrier.id] = allowed_ids
         return res
 
-
     _columns = {
         'postlogistics_license_id': fields.many2one(
             'postlogistics.license',
@@ -234,6 +247,7 @@ class DeliveryCarrier(orm.Model):
             readonly=True),
         'allowed_option_ids': fields.function(
             _get_allowed_option_ids, type="many2many",
-            relation='delivery.carrier.template.option', string='Allowed options',
+            relation='delivery.carrier.template.option',
+            string='Allowed options',
             help="Compute allowed options according to selected options."),
-        }
+    }

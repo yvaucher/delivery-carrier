@@ -27,15 +27,17 @@ from StringIO import StringIO
 from openerp.osv import orm
 from openerp.tools.translate import _
 
-_compile_itemid = re.compile('[^0-9A-Za-z+\-_]')
+_compile_itemid = re.compile(r'[^0-9A-Za-z+\-_]')
+
 
 class PostlogisticsWebService(object):
-    """
-    Connector with postlogistics Web Service
-    for label using post.ch Web Service
+
+    """ Connector with PostLogistics for labels using post.ch Web Services
+
     Handbook available here: http://www.poste.ch/post-barcode-cug.htm
 
     Allows to generate labels
+
     """
 
     def __init__(self, company):
@@ -48,14 +50,13 @@ class PostlogisticsWebService(object):
         self.client = Client(
             company.postlogistics_wsdl_url,
             transport=t)
-        return True
 
     def _send_request(self, request, **kwargs):
-        """
-        Wrapper for API requests
+        """ Wrapper for API requests
 
         :param request: callback for API request
         :param **kwargs: params forwarded to the callback
+
         """
         res = {}
         try:
@@ -76,13 +77,14 @@ class PostlogisticsWebService(object):
         return res
 
     def _get_language(self, lang):
-        """
-        Return a language to iso format from openerp format.
-        iso_code field in res.lang is not mandatory thus not always set.
+        """ Return a language to iso format from openerp format.
+
+        `iso_code` field in res.lang is not mandatory thus not always set.
         Use partner language if available, otherwise use english
 
         :param partner: partner browse record
         :return: language code to use.
+
         """
         available_languages = self.client.factory.create('ns0:Language')
         lang_code = lang.split('_')[0]
@@ -90,19 +92,18 @@ class PostlogisticsWebService(object):
             return lang_code
         return 'en'
 
-    def read_allowed_services_by_franking_license(self, license, company,
+    def read_allowed_services_by_franking_license(self, cp_license, company,
                                                   lang=None):
         """ Get a list of allowed service for a postlogistics licence """
         if not lang:
             lang = company.partner_id.lang
         lang = self._get_language(lang)
         request = self.client.service.ReadAllowedServicesByFrankingLicense
-        return self._send_request(request, FrankingLicense=license, Language=lang)
+        return self._send_request(request, FrankingLicense=cp_license,
+                                  Language=lang)
 
     def read_service_groups(self, company, lang):
-        """
-        Get group of services
-        """
+        """ Get group of services """
         if not lang:
             lang = company.partner_id.lang
         lang = self._get_language(lang)
@@ -110,9 +111,7 @@ class PostlogisticsWebService(object):
         return self._send_request(request, Language=lang)
 
     def read_basic_services(self, company, service_group_id, lang):
-        """
-        Get basic services for a given service group
-        """
+        """ Get basic services for a given service group """
         if not lang:
             lang = company.partner_id.lang
         lang = self._get_language(lang)
@@ -121,9 +120,7 @@ class PostlogisticsWebService(object):
                                   ServiceGroupID=service_group_id)
 
     def read_additional_services(self, company, service_code, lang):
-        """
-        Get additional services compatible with a basic services
-        """
+        """ Get additional services compatible with a basic services """
         if not lang:
             lang = company.partner_id.lang
         lang = self._get_language(lang)
@@ -131,9 +128,7 @@ class PostlogisticsWebService(object):
         return self._send_request(request, Language=lang, PRZL=service_code)
 
     def read_delivery_instructions(self, company, service_code, lang):
-        """
-        Get delivery instruction 'ZAW' compatible with a base service
-        """
+        """ Get delivery instruction 'ZAW' compatible with a base service """
         if not lang:
             lang = company.partner_id.lang
         lang = self._get_language(lang)
@@ -141,11 +136,11 @@ class PostlogisticsWebService(object):
         return self._send_request(request, Language=lang, PRZL=service_code)
 
     def _prepare_recipient(self, picking):
-        """
-        Create a ns0:Recipient as a dict from a partner
+        """ Create a ns0:Recipient as a dict from a partner
 
         :param partner: partner browse record
         :return a dict containing data for ns0:Recipient
+
         """
         partner = picking.partner_id
 
@@ -156,7 +151,7 @@ class PostlogisticsWebService(object):
             'City': partner.city,
             'Country': partner.country_id.code,
             'EMail': partner.email or None,
-            }
+        }
 
         if partner.street2:
             recipient['AddressSuffix'] = partner.street2
@@ -179,12 +174,13 @@ class PostlogisticsWebService(object):
         return recipient
 
     def _prepare_customer(self, picking):
-        """
-        Create a ns0:Customer as a dict from picking
+        """ Create a ns0:Customer as a dict from picking
 
         This is the Postlogistic Customer, thus the sender
+
         :param picking: picking browse record
         :return a dict containing data for ns0:Customer
+
         """
         company = picking.company_id
         partner = company.partner_id
@@ -196,15 +192,15 @@ class PostlogisticsWebService(object):
             'City': partner.city,
             'Country': partner.country_id.code,
             'DomicilePostOffice': company.postlogistics_office,
-            }
+        }
         logo_format = None
-        if company.postlogistics_logo:
-            logo_image = Image.open(StringIO(company.postlogistics_logo.decode('base64')))
+        logo = company.postlogistics_logo
+        if logo:
+            logo_image = Image.open(StringIO(logo.decode('base64')))
             logo_format = logo_image.format
-            customer['Logo'] = company.postlogistics_logo
+            customer['Logo'] = logo
             customer['LogoFormat'] = logo_format
         return customer
-
 
     def _get_single_option(self, picking, option):
         option = [opt.code for opt in picking.option_ids
@@ -237,13 +233,13 @@ class PostlogisticsWebService(object):
         """ Get the license
 
         Take it from carrier and if not defined get the first license
-        depending on service group. This needs to have associated 
+        depending on service group. This needs to have associated
         licenses to groups.
 
         :return: license number
         """
-        license = picking.carrier_id.postlogistics_license_id
-        if not license:
+        franking_license = picking.carrier_id.postlogistics_license_id
+        if not franking_license:
             company_licenses = picking.company_id.postlogistics_license_ids
             group = picking.carrier_id.postlogistics_service_group_id
             if not company_licenses or not group:
@@ -251,9 +247,9 @@ class PostlogisticsWebService(object):
             group_license_ids = [l.id for l in group.postlogistics_license_ids]
             if not group_license_ids:
                 return None
-            license = [l for l in company_licenses
-                       if l.id in group_license_ids][0]
-        return license.number
+            franking_license = [l for l in company_licenses
+                                if l.id in group_license_ids][0]
+        return franking_license.number
 
     def _prepare_attributes(self, picking):
         services = [option.code.split(',') for option in picking.option_ids
@@ -262,7 +258,7 @@ class PostlogisticsWebService(object):
 
         attributes = {
             'PRZL': services,
-            }
+        }
         return attributes
 
     def _get_itemid(self, picking, pack_no):
@@ -270,6 +266,7 @@ class PostlogisticsWebService(object):
         Last `+` separates picking name and package number (if any)
 
         :return string: itemid
+
         """
         name = _compile_itemid.sub('', picking.name)
         if pack_no:
@@ -287,7 +284,7 @@ class PostlogisticsWebService(object):
                 'ItemID': itemid,
                 'Recipient': recipient,
                 'Attributes': attributes,
-                }
+            }
 
             item_list.append(item)
 
@@ -296,19 +293,17 @@ class PostlogisticsWebService(object):
     def _prepare_data(self, item_list):
         sending = {
             'Item': item_list,
-            }
+        }
         provider = {
             'Sending': sending
-            }
+        }
         data = {
             'Provider': provider,
-            }
+        }
         return data
 
     def _prepare_envelope(self, picking, post_customer, data):
-        """
-        Define envelope for label request
-        """
+        """ Define envelope for label request """
         label_layout = self._get_label_layout(picking)
         output_format = self._get_output_format(picking)
         image_resolution = self._get_image_resolution(picking)
@@ -319,20 +314,20 @@ class PostlogisticsWebService(object):
             'ImageFileType': output_format,
             'ImageResolution': image_resolution,
             'PrintPreview': False,
-            }
+        }
         license = self._get_license(picking)
         file_infos = {
             'FrankingLicense': license,
             'PpFranking': False,
             'CustomerSystem': 'OpenERP',
             'Customer': post_customer,
-            }
+        }
 
         envelope = {
             'LabelDefinition': label_definitions,
             'FileInfos': file_infos,
             'Data': data,
-            }
+        }
         return envelope
 
     def generate_label(self, picking, trackings, user_lang='en_US'):

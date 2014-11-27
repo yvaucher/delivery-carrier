@@ -22,7 +22,7 @@ from operator import attrgetter
 
 from openerp.osv import orm
 
-from postlogistics.web_service import PostlogisticsWebService
+from .postlogistics.web_service import PostlogisticsWebService
 
 
 class stock_picking(orm.Model):
@@ -111,6 +111,7 @@ class stock_picking(orm.Model):
 
 
 class ShippingLabel(orm.Model):
+
     """ Child class of ir attachment to identify which are labels """
     _inherit = 'shipping.label'
 
@@ -130,7 +131,7 @@ class ShippingLabel(orm.Model):
                      ('jpg', 'JPG'),
                      ('png', 'PNG'),
                      ('pdf', 'PDF'),
-                     ('spdf', 'sPDF'), # sPDF is a pdf without integrated font
+                     ('spdf', 'sPDF'),  # sPDF is a pdf without integrated font
                      ('zpl2', 'ZPL2')]
         file_types.extend(new_types)
         return file_types

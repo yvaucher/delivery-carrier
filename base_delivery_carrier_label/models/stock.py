@@ -72,11 +72,7 @@ class StockQuantPackage(models.Model):
             if pack.total_weight:
                 pack.weight = pack.total_weight
             elif not pack.quant_ids:
-                # package.pack_operations would be too easy
-                operations = self.env['stock.pack.operation'].search(
-                    [('result_package_id', '=', pack.id),
-                     ('product_id', '!=', False),
-                     ])
+                operations = pack.get_operations()
 
                 # we make use get_weight with  @api.muli instead of
                 # sum([op.get_weight for op in operations])
@@ -106,6 +102,16 @@ class StockQuantPackage(models.Model):
             if pack.weight:
                 res[pack.id] += ' %s kg' % pack.weight
         return res
+
+    @api.multi
+    def get_operations(self):
+        """Get pack operations of the package."""
+        self.ensure_one()
+        return self.env['stock.pack.operation'].search(
+            [('result_package_id', '=', self.id),
+             ('product_id', '!=', False),
+             ]
+        )
 
 
 class StockPicking(models.Model):

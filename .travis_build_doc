@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd ${TRAVIS_BUILD_DIR}
+
+sphinx-build -b html ./delivery_carrier_label_postlogistics/doc/ ${HOME}/doc
+sphinx-intl build
+sphinx-build -D language=fr -b html ./delivery_carrier_label_postlogistics/doc/ ${HOME}/doc/fr
+sphinx-build -D language=de -b html ./delivery_carrier_label_postlogistics/doc/ ${HOME}/doc/de

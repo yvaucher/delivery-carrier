@@ -1,5 +1,7 @@
 # Copyright 2013-2019 Yannick Vaucher (Camptocamp SA)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+
+import base64
 import re
 import logging
 from urllib.request import HTTPSHandler
@@ -470,7 +472,7 @@ class PostlogisticsWebService(object):
                 file_type = output_format if output_format != 'spdf' else 'pdf'
                 res['value'].append({
                     'item_id': item.ItemID,
-                    'binary': item.Label,
+                    'binary': base64.b64encode(bytes(item.Label, 'utf-8')),
                     'tracking_number': item.IdentCode,
                     'file_type': file_type,
                 })

@@ -115,9 +115,9 @@ class PostlogisticsWebService(object):
         }
         logo = company.postlogistics_logo
         if logo:
-            logo_image = Image.open(StringIO(logo.decode('base64')))
+            logo_image = Image.open(StringIO(logo.decode()))
             logo_format = logo_image.format
-            customer['logo'] = logo
+            customer['logo'] = logo.decode()
             customer['logoFormat'] = logo_format
         return customer
 
@@ -423,7 +423,7 @@ class PostlogisticsWebService(object):
             res['success'] = False
             res['errors'] = [
                 _('Error when communicating with swisspost API: %s') %
-                response.json()
+                response.content.decode("utf-8")
             ]
             return res
 
